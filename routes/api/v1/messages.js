@@ -83,76 +83,32 @@ if (id) {
 });
 
 router.post("/", (req, res) => {
-    // create a new message
-  const message = new Message();
-  message.message = req.body.message.message;
-  message.user = req.body.message.user;
-
-    // save the message
+    console.log("Received request body:", req.body);
+    // Create a new message using the schema
+    const message = new Message({
+      user: req.body.message.user,
+      message: req.body.message.message,
+    });
+  
+    // Save the message
     message
-        .save()
-        .then((savedMessage) => {
-            // send back the new message object as JSON
-            res.json({
-                status: "success",
-                message: `POSTING a new message for user ${message.user}`,
-                data: {
-                    inputMessage: req.body.message,
-                    savedMessage: savedMessage,
-                },
-            });
-        })
-        .catch((err) => {
-            console.error(err);
-            res.status(500).json({
-                status: "error",
-                message: "Error posting message",
-            });
+      .save()
+      .then((savedMessage) => {
+        // Send back the new message object as JSON
+        res.json({
+          status: "success",
+          message: `POSTING a new message for user ${message.user}`,
+          data: {
+            inputMessage: { user, message: text },
+            savedMessage: savedMessage,
+          },
         });
-});
-
-//put for a specific message id
-router.put("/", (req, res) => {
-    const id = req.params.id; // Use req.params.id to get the id from the query parameter
-    const { message: newMessage, user: newUser } = req.body;
-  
-    Message.findById(id)
-      .exec()
-      .then((message) => {
-        if (message) {
-          message.message = newMessage || message.message;
-          message.user = newUser || message.user;
-  
-          message
-            .save()
-            .then((updatedMessage) => {
-              res.json({
-                status: "success",
-                message: `UPDATING message with id ${id}`,
-                data: {
-                  message: updatedMessage,
-                },
-              });
-            })
-            .catch((err) => {
-              console.error(err);
-              res.status(500).json({
-                status: "error",
-                message: "Error updating message",
-              });
-            });
-        } else {
-          res.status(404).json({
-            status: "error",
-            message: `Message with id ${id} not found`,
-          });
-        }
       })
       .catch((err) => {
         console.error(err);
         res.status(500).json({
           status: "error",
-          message: "Error updating message",
+          message: "Error posting message",
         });
       });
   });
