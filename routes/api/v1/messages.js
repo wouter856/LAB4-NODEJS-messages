@@ -18,11 +18,9 @@ const Message = mongoose.model("Message", messageSchema);
 router.get("/:id?", (req, res) => {
 const id = req.params.id;
 const user = req.query.user;
-console.log(id);
-console.log(user);
 
 if (id) {
-    //If there is an idea get the message for this id from MongoDB
+    //If there is an id get the message for this id from MongoDB
     Message.findById(id)
         .exec()
         .then((message) => {
