@@ -10,7 +10,7 @@ const messageSchema = new Schema({
   id: Number,
   user: String,
   message: String,
-});
+}, {versionKey: false});
 
 const Message = mongoose.model("Message", messageSchema);
 
@@ -83,7 +83,7 @@ if (id) {
 });
 
 router.post("/", (req, res) => {
-  // create a new message
+    // create a new message
   const message = new Message();
   message.message = req.body.message.message;
   message.user = req.body.message.user;
@@ -96,7 +96,10 @@ router.post("/", (req, res) => {
             res.json({
                 status: "success",
                 message: `POSTING a new message for user ${message.user}`,
-                data: savedMessage,
+                data: {
+                    inputMessage: req.body.message,
+                    savedMessage: savedMessage,
+                },
             });
         })
         .catch((err) => {
@@ -109,50 +112,50 @@ router.post("/", (req, res) => {
 });
 
 //put for a specific message id
-router.put("/:id", (req, res) => {
-  const id = req.params.id;
-  const newMessage = req.body.message.message;
-  const newUser = req.body.message.user;
-
-  Message.findById(id)
-    .exec()
-    .then((message) => {
-      if (message) {
-        message.message = newMessage ? newMessage : message.message;
-        message.user = newUser ? newUser : message.user;
-        message
-          .save()
-          .then((updatedMessage) => {
-            res.json({
-              status: "success",
-              message: `UPDATING message with id ${id}`,
-              data: {
-                message: updatedMessage,
-              },
+router.put("/", (req, res) => {
+    const id = req.params.id; // Use req.params.id to get the id from the query parameter
+    const { message: newMessage, user: newUser } = req.body;
+  
+    Message.findById(id)
+      .exec()
+      .then((message) => {
+        if (message) {
+          message.message = newMessage || message.message;
+          message.user = newUser || message.user;
+  
+          message
+            .save()
+            .then((updatedMessage) => {
+              res.json({
+                status: "success",
+                message: `UPDATING message with id ${id}`,
+                data: {
+                  message: updatedMessage,
+                },
+              });
+            })
+            .catch((err) => {
+              console.error(err);
+              res.status(500).json({
+                status: "error",
+                message: "Error updating message",
+              });
             });
-          })
-          .catch((err) => {
-            console.error(err);
-            res.status(500).json({
-              status: "error",
-              message: "Error updating message",
-            });
+        } else {
+          res.status(404).json({
+            status: "error",
+            message: `Message with id ${id} not found`,
           });
-      } else {
-        res.status(404).json({
+        }
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).json({
           status: "error",
-          message: `Message with id ${id} not found`,
+          message: "Error updating message",
         });
-      }
-    })
-    .catch((err) => {
-      console.error(err);
-      res.status(500).json({
-        status: "error",
-        message: "Error updating message",
       });
-    });
-});
+  });
 
 router.delete("/:id", (req, res) => {
   const id = req.params.id;
