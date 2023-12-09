@@ -14,6 +14,13 @@ const messageSchema = new Schema({
 
 const Message = mongoose.model("Message", messageSchema);
 
+// GET route for retrieving messages
+router.get("/:id?", (req, res) => {
+const id = req.params.id;
+const user = req.query.user;
+console.log(id);
+console.log(user);
+
 if (id) {
     //If there is an idea get the message for this id from MongoDB
     Message.findById(id)
@@ -75,7 +82,7 @@ if (id) {
             });
         });
     }
-
+});
 
 router.post("/", (req, res) => {
   // create a new message
@@ -86,14 +93,12 @@ router.post("/", (req, res) => {
     // save the message
     message
         .save()
-        .then((newMessage) => {
+        .then((savedMessage) => {
             // send back the new message object as JSON
             res.json({
                 status: "success",
-                message: `POSTING a new message for user ${newMessage.user}`,
-                data: {
-                    message: newMessage,
-                },
+                message: `POSTING a new message for user ${message.user}`,
+                data: savedMessage,
             });
         })
         .catch((err) => {
